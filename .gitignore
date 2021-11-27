@@ -1,5 +1,3 @@
-.vscode
-
 ###> symfony/framework-bundle ###
 /.env
 /public/bundles/
@@ -21,3 +19,10 @@
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
+
+docker-compose.override.yml
+
+###> phpunit/phpunit ###
+/phpunit.xml
+.phpunit.result.cache
+###< phpunit/phpunit ###

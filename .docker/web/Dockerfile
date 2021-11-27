@@ -1,4 +1,4 @@
-FROM php:7.2.28-apache
+FROM php:8.0-apache
 
 # Install build dependencies, e.g. composer, system libs
 RUN apt-get update 1> /dev/null \
@@ -10,13 +10,13 @@ RUN apt-get update 1> /dev/null \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # PHP
-RUN pecl install mongodb-1.5.5 1> /dev/null \
-    && docker-php-ext-configure gd --with-gd --with-webp-dir --with-jpeg-dir \
-        --with-png-dir --with-zlib-dir --with-xpm-dir --with-freetype-dir \
+RUN pecl install mongodb 1> /dev/null \
+    && docker-php-ext-configure gd --enable-gd --with-webp --with-jpeg \
+        --with-xpm --with-freetype \
     && docker-php-ext-enable mongodb \
     && docker-php-ext-install bcmath exif gd 1> /dev/null
 
 WORKDIR /var/www/app
 
-COPY ./docker/web/vhost.conf /etc/apache2/sites-available/000-default.conf
-COPY ./docker/web/inventory-php.ini /usr/local/etc/php/conf.d/inventory-php.ini
+COPY vhost.conf /etc/apache2/sites-available/000-default.conf
+COPY inventory-php.ini /usr/local/etc/php/conf.d/inventory-php.ini

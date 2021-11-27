@@ -261,7 +261,7 @@ class InventoryItem extends Persistable
         $this->deleted = $deleted;
     }
 
-    public function isDeleted() : boolean
+    public function isDeleted(): bool
     {
         return $this->deleted;
     }
