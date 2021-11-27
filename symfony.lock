@@ -32,6 +32,9 @@
     "gumlet/php-image-resize": {
         "version": "1.9.1"
     },
+    "jean85/pretty-package-versions": {
+        "version": "2.0.5"
+    },
     "mongodb/mongodb": {
         "version": "1.4.0"
     },
