@@ -39,7 +39,7 @@ class DocumentStorage
     /**
      * Get a reference to our inventory collection
      * 
-     * @return MongoDB\Collection
+     * @return MongoDB\Collection
      */
     protected function getInventoryCollection() : \MongoDB\Collection
     {
@@ -50,7 +50,7 @@ class DocumentStorage
     /**
      * Get a reference to our tag collection
      * 
-     * @return MongoDB\Collection
+     * @return MongoDB\Collection
      */
     protected function getTagCollection() : \MongoDB\Collection
     {
@@ -87,7 +87,7 @@ class DocumentStorage
     /**
      * Get an inventory item
      * 
-     * @return App\Entity\InventoryItem
+     * @return App\Entity\InventoryItem
      */
     public function getInventoryItem(string $id) : ?InventoryItem
     {
@@ -137,7 +137,7 @@ class DocumentStorage
     /**
      * Persist an inventory item
      * 
-     * @return string The ID of the item
+     * @return string The ID of the item
      */
     public function saveInventoryItem(InventoryItem $item) : string
     {
