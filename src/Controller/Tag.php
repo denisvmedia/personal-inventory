@@ -2,13 +2,12 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use App\Service\DocumentStorage;
 use App\Service\ImageStorage;
 
-class Tag extends Controller
+class Tag extends AbstractController
 {
     /** @var DocumentStorage */
     protected $docs;
