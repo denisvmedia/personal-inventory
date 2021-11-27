@@ -40,7 +40,7 @@ We include a docker configuration to get up and running quickly and easily.  The
 1. Run `docker-compose up --build`.  Add `-d` to run it in the background.
 1. Open [https://inventory.devenv.test](https://inventory.devenv.test) in your browser.
 
-For any other type of setup, such as on a home network server, edit or override the settings in `docker-compose.yaml` and `docker/web/Dockerfile`.  To point to a MongoDB server other than the one included, edit the `.env` file.  For development it's handy to set `APP_ENV=dev` in `.env` to get access to the Symfony framework's profiler and extra debugging info.
+For any other type of setup, such as on a home network server, edit or override the settings in `docker-compose.yaml` and `docker/web/Dockerfile`.  To point to a MongoDB server other than the one included, edit the `.env.local` file.
 
 ### Without Docker
 
@@ -53,7 +53,6 @@ This personal inventory manager is a standard PHP web application. Requirements:
 
 Setup:
 
-- Copy `.env.dist` to `.env` and set `DATABASE_URL` to point to your running MongoDB server.
 - Set the `data/images` directory to be writable by the web server.
 - Set the web server's document root to be the `public` directory with all requests going to `index.php`.
 - Run `composer install`. 
