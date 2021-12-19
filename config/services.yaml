@@ -2,6 +2,7 @@
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
     locale: 'en'
+    app.mongodb.url: '%env(string:DATABASE_URL)%'
 
 services:
     # default configuration for services in *this* file
@@ -24,7 +25,15 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
     App\Service\ImageStorage:
-        arguments: ['%kernel.project_dir%/data/images']
+        arguments:
+            $basePath: '%kernel.project_dir%/data/images'
+
+    mongo.db.client:
+        class: MongoDB\Client
+        arguments:
+            - '%app.mongodb.url%'
+
+    App\Service\DocumentStorage:
+        arguments:
+            $mongo: '@mongo.db.client'

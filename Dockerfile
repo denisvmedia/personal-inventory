@@ -2,12 +2,12 @@
 ARG base_image=base
 ARG base_debug_image=base-debug
 ARG NGINX_VERSION=1.21.1
-ARG ALPINE_VERSION=3.13
+ARG ALPINE_VERSION=3.15
 
 #
 # base php image
 #
-FROM php:8.0-fpm-alpine${ALPINE_VERSION} AS base
+FROM php:8.1-fpm-alpine${ALPINE_VERSION} AS base
 
 RUN apk add --no-cache --virtual .intl-deps icu-dev libpng-dev \
       libjpeg-turbo-dev libwebp-dev zlib-dev libzip-dev libxpm-dev freetype-dev \

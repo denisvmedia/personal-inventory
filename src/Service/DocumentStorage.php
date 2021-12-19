@@ -1,69 +1,60 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
-use MongoDB\Client as MongoDB;
+use MongoDB\Client;
 use MongoDB\BSON\ObjectId;
-
 use App\Entity\InventoryItem;
 use App\Entity\Tag;
+use MongoDB\Collection;
+use RuntimeException;
 
-class DocumentStorage
+final class DocumentStorage
 {
-    /** MongoDB\Client */
-    protected $mongo;
+    private bool $inited = false;
 
-    /**
-     * Set up
-     */
-    protected function init()
+    public function __construct(private Client $mongo)
     {
-        if (!$this->mongo) {
-            $this->mongo = new MongoDB(getenv('DATABASE_URL'));
-            // Create full text index if it doesn't already exist
-            $inventory = $this->mongo->inventory->inventory;
-            $exists = false;
-            foreach ($inventory->listIndexes() as $index) {
-                if ($index->isText()) {
-                    $exists = true;
-                    break;
-                }
-            }
-            if (!$exists) {
-                // Note this is a blocking process, so running this on a collection with data may hinder performance
-                $inventory->createIndex(['$**' => 'text']);
+    }
+
+    private function getClient(): Client
+    {
+        if ($this->inited) {
+            return $this->mongo;
+        }
+
+        // Create full text index if it doesn't already exist
+        $inventory = $this->mongo->inventory->inventory;
+        $exists = false;
+        foreach ($inventory->listIndexes() as $index) {
+            if ($index->isText()) {
+                $exists = true;
+                break;
             }
         }
+        if (!$exists) {
+            // Note this is a blocking process, so running this on a collection with data may hinder performance
+            $inventory->createIndex(['$**' => 'text']);
+        }
+
+        $this->inited = true;
+
+        return $this->mongo;
     }
 
-    /**
-     * Get a reference to our inventory collection
-     * 
-     * @return MongoDB\Collection
-     */
-    protected function getInventoryCollection() : \MongoDB\Collection
+    private function getInventoryCollection(): Collection
     {
-        $this->init();
-        return $this->mongo->inventory->inventory;
+        return $this->getClient()->inventory->inventory;
     }
 
-    /**
-     * Get a reference to our tag collection
-     * 
-     * @return MongoDB\Collection
-     */
-    protected function getTagCollection() : \MongoDB\Collection
+    private function getTagCollection(): Collection
     {
-        $this->init();
-        return $this->mongo->inventory->tags;
+        return $this->getClient()->inventory->tags;
     }
 
-    /**
-     * Get inventory items
-     * 
-     * @return MongoDB\Driver\Cursor
-     */
-    public function getInventoryItems() : iterable
+    public function getInventoryItems(): iterable
     {
         return $this->getInventoryCollection()->find(
             ['deleted' => false], 
@@ -71,12 +62,7 @@ class DocumentStorage
         );
     }
 
-    /**
-     * Get inventory items containing a string
-     * 
-     * @return MongoDB\Driver\Cursor
-     */
-    public function searchInventoryItems(string $query) : iterable
+    public function searchInventoryItems(string $query): iterable
     {
         return $this->getInventoryCollection()->find([
             '$text' => ['$search' => $query],
@@ -84,25 +70,25 @@ class DocumentStorage
         ]);
     }
 
-    /**
-     * Get an inventory item
-     * 
-     * @return App\Entity\InventoryItem
-     */
-    public function getInventoryItem(string $id) : ?InventoryItem
+    public function getInventoryItem(string $id): ?InventoryItem
     {
-        $inventory = $this->getInventoryCollection();
-        return $inventory->findOne(['_id' => new ObjectId("$id"), 'deleted' => false]);
+        $item = $this->getInventoryCollection()->findOne([
+            '_id' => new ObjectId("$id"), 'deleted' => false
+        ]);
+
+        if (null === $item) {
+            return null;
+        }
+
+        if (!$item instanceof InventoryItem) {
+            // TODO: enhance the exception
+            throw new RuntimeException('Unexpected $item type');
+        }
+
+        return $item;
     }
 
-    /**
-     * Get inventory items by tag name
-     * 
-     * @param string $category One of Tag::CATEGORY_*
-     * @param string $tag Tag name
-     * @return MongoDB\Driver\Cursor
-     */
-    public function getInventoryItemsByTag(string $category, string $tag) : iterable
+    public function getInventoryItemsByTag(string $category, string $tag): iterable
     {
         return $this->getInventoryCollection()->find(
             [
@@ -116,34 +102,33 @@ class DocumentStorage
         );
     }
 
-    /**
-     * Get one random inventory item by tag name
-     * 
-     * @param string $category One of Tag::CATEGORY_*
-     * @param string $tag Tag name
-     * @return MongoDB\Driver\Cursor
-     */
-    public function getRandomInventoryItemByTag(string $category, string $tag) : ?InventoryItem
+    public function getRandomInventoryItemByTag(string $category, string $tag): ?InventoryItem
     {
-        return $this->getInventoryCollection()->findOne([
+        $item = $this->getInventoryCollection()->findOne([
             $category => [
                 '$regex' => '^' . $tag . '$',
                 '$options' => 'i'
             ],
             'deleted' => false
         ]);
+
+        if (null === $item) {
+            return null;
+        }
+
+        if (!$item instanceof InventoryItem) {
+            // TODO: enhance the exception
+            throw new RuntimeException('Unexpected $item type');
+        }
+
+        return $item;
     }
 
     /**
-     * Persist an inventory item
-     * 
      * @return string The ID of the item
      */
-    public function saveInventoryItem(InventoryItem $item) : string
+    public function saveInventoryItem(InventoryItem $item): string
     {
-        if (!$item) {
-            throw new \RuntimeException('Empty item can not be saved');
-        }
         $inventory = $this->getInventoryCollection();
         // Get the original tags so we can update their counters
         $originalItem = $this->getInventoryItem($item->getId());
@@ -162,7 +147,7 @@ class DocumentStorage
         $this->saveInventoryItemTags(Tag::CATEGORY_ITEM_TYPE, $originalTypes, $item->getTypes());
         $this->saveInventoryItemTags(Tag::CATEGORY_ITEM_LOCATION, $originalLocations, $item->getLocations());
     
-        return (string) $item->getId();
+        return $item->getId();
     }
 
     /**
@@ -172,7 +157,7 @@ class DocumentStorage
      * @param string[] $originalTagStrings Tag strings associated with the item before update
      * @param string[] $updatedTagStrings Tag strings associated with the updated item
      */
-    protected function saveInventoryItemTags(string $category, array $originalTagStrings, array $updatedTagStrings)
+    private function saveInventoryItemTags(string $category, array $originalTagStrings, array $updatedTagStrings): void
     {
         $tags = [];
         foreach (array_diff($originalTagStrings, $updatedTagStrings) as $removed) {
@@ -205,11 +190,8 @@ class DocumentStorage
     /**
      * Soft delete an inventory item
      */
-    public function deleteInventoryItem(InventoryItem $item)
+    public function deleteInventoryItem(InventoryItem $item): void
     {
-        if (!$item) {
-            throw new \RuntimeException('Empty item can not be deleted');
-        }
         $item->setDeleted(true);
         $inventory = $this->getInventoryCollection();
         $inventory->replaceOne(
@@ -223,14 +205,12 @@ class DocumentStorage
 
     /**
      * Get tags, optionally by category
-     * 
-     * @param string $category One of Tag::CATEGORY_*
+     *
+     * @param string|null $category One of Tag::CATEGORY_*
      * @param string[] $orderBy Field to order by
-     * @return MongoDB\Driver\Cursor
      */
-    public function getTags(string $category = null, array $orderBy = []) : iterable
+    public function getTags(string $category = null, array $orderBy = []): iterable
     {
-        $this->init();
         $collection = $this->getTagCollection();
         $filter = [];
         $options = [];
@@ -249,13 +229,11 @@ class DocumentStorage
 
     /**
      * Get "top" 5 tags by category
-     * 
+     *
      * @param string $category One of Tag::CATEGORY_*
-     * @return MongoDB\Driver\Cursor
      */
-    public function getTopTags(string $category) : iterable
+    public function getTopTags(string $category): iterable
     {
-        $this->init();
         $collection = $this->getTagCollection();
         return $collection->find(
             ['category' => $category],
@@ -265,20 +243,16 @@ class DocumentStorage
 
     /**
      * Get "top" 5 type tags
-     * 
-     * @return MongoDB\Driver\Cursor
      */
-    public function getTopTypeTags() : iterable
+    public function getTopTypeTags(): iterable
     {
         return $this->getTopTags(Tag::CATEGORY_ITEM_TYPE);
     }
 
     /**
      * Get "top" 5 location tags
-     * 
-     * @return MongoDB\Driver\Cursor
      */
-    public function getTopLocationTags() : iterable
+    public function getTopLocationTags(): iterable
     {
         return $this->getTopTags(Tag::CATEGORY_ITEM_LOCATION);
     }
@@ -290,11 +264,9 @@ class DocumentStorage
      * @param string $name
      * @return Tag|null
      */
-    public function getTagByName(string $category, string $name) : ?Tag
+    public function getTagByName(string $category, string $name): ?Tag
     {
-        $this->init();
-        $collection = $this->getTagCollection();
-        return $collection->findOne(
+        $item = $this->getTagCollection()->findOne(
             [
                 'category' => $category, 
                 // Case insensitive indexed search
@@ -304,5 +276,16 @@ class DocumentStorage
                 ]
             ]
         );
+
+        if (null === $item) {
+            return null;
+        }
+
+        if (!$item instanceof Tag) {
+            // TODO: enhance the exception
+            throw new RuntimeException('Unexpected $item type');
+        }
+
+        return $item;
     }
 }

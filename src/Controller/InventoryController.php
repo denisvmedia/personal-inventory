@@ -19,21 +19,16 @@ use App\Entity\Tag;
 use App\Service\DocumentStorage;
 use App\Service\ImageStorage;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
-class Inventory extends AbstractController
+class InventoryController extends AbstractController
 {
-    /** @var DocumentStorage */
-    protected $docs;
-
-    /** @var ImageStorage */
-    protected $images;
-
-    public function __construct(DocumentStorage $docs, ImageStorage $images)
+    public function __construct(protected DocumentStorage $docs, protected ImageStorage $images)
     {
-        $this->docs = $docs;
-        $this->images = $images;
     }
 
+    #[Route('/inventory', name: 'inventory_list')]
+    #[Route('/inventory/tags/{category}/{tag}', name: 'inventory_list_by_tag')]
     public function listItems(Request $request, string $category = null, string $tag = null)
     {
         $breadcrumb = '';
@@ -55,6 +50,7 @@ class Inventory extends AbstractController
         );
     }
 
+    #[Route('/inventory/{id<[0-9a-fA-F]{24}>}', name: 'inventory_get')]
     public function getItem($id)
     {
         $item = $this->docs->getInventoryItem($id);
@@ -67,6 +63,8 @@ class Inventory extends AbstractController
         );
     }
 
+    #[Route('/inventory/add', name: 'inventory_add')]
+    #[Route('/inventory/{id}/edit', name: 'inventory_edit')]
     public function editItem(Request $request, $id = null)
     {
         $errors = [];
@@ -207,7 +205,7 @@ class Inventory extends AbstractController
     {
         $tags = [];
         if ($request->getMethod() === 'POST') {
-            $formInput = $request->request->get('form');
+            $formInput = $request->request->all('form');
             if (array_key_exists($field, $formInput)) {
                 $tags = array_combine($formInput[$field], $formInput[$field]);
             }
@@ -224,7 +222,7 @@ class Inventory extends AbstractController
      * @param Request $request
      * @param InventoryItem $item
      */
-    private function deleteImages(Request $request, InventoryItem $item)
+    private function deleteImages(Request $request, InventoryItem $item): void
     {
         $formInput = $request->request->get('delete_images');
         if ($formInput) {
@@ -239,7 +237,8 @@ class Inventory extends AbstractController
      * 
      * Query string parameters "w" and "h" can be used to get a scaled version. Original images will be scaled as needed.
      */
-    public function image(Request $request, $id, $filename)
+    #[Route('/inventory/{id}/images/{filename}', name: 'inventory_image')]
+    public function image(Request $request, $id, $filename): Response
     {
         $item = $this->docs->getInventoryItem($id);
         if (!$item) {

@@ -20,8 +20,10 @@ services:
       - APP_SECRET=${APP_SECRET}
       - DATABASE_URL=${DATABASE_URL}
     volumes:
-      - .:/var/www/html:cached
-      - ./vendor:/var/www/html/vendor:delegated
+      #- .:/var/www/html:cached
+      #- ./vendor:/var/www/html/vendor:delegated
+      - .:/var/www/html
+      - ./vendor:/var/www/html/vendor
     ports:
       - "9000"
     networks:

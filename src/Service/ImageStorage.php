@@ -1,31 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
+use DirectoryIterator;
 use Gumlet\ImageResize;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use App\Entity\InventoryItem;
 
-class ImageStorage
+final class ImageStorage
 {
-    const WIDTH_SMALL = 200;
-    const HEIGHT_SMALL = 200;
-
-    /** @var string */
-    protected $basePath;
+    private const WIDTH_SMALL = 200;
+    private const HEIGHT_SMALL = 200;
 
     /**
      * Constructor
      * 
      * @param string $basePath See services.yaml
      */
-    public function __construct(string $basePath)
+    public function __construct(private string $basePath)
     {
-        $this->basePath = $basePath;
     }
 
-    public function getItemImagePath(InventoryItem $item)
+    public function getItemImagePath(InventoryItem $item): string
     {
         return $this->basePath . DIRECTORY_SEPARATOR . $item->getId();
     }
@@ -71,12 +70,12 @@ class ImageStorage
         $images = [];
         $path = $this->getItemImagePath($item);
         if (file_exists($path)) {
-            $iter = new \DirectoryIterator($path);
+            $iter = new DirectoryIterator($path);
             foreach ($iter as $file) {
                 if (!$file->isDot()) {
                     $name = $file->getFilename();
                     $nameParts = explode('.', $name);
-                    if (strpos($nameParts[0], 'w') === false) {
+                    if (!str_contains($nameParts[0], 'w')) {
                         $images[] = $name;
                     }
                 }
@@ -95,7 +94,7 @@ class ImageStorage
      * @param int|null $height
      * @return string
      */
-    public function getFilePath(InventoryItem $item, string $filename, int $width = null, int $height = null)
+    public function getFilePath(InventoryItem $item, string $filename, int $width = null, int $height = null): string
     {
         $unscaledFilename = $filename;
         if ($width && $height) {
@@ -122,7 +121,7 @@ class ImageStorage
      * @param InventoryItem $item
      * @param string $filename
      */
-    public function deleteItemImage(InventoryItem $item, string $filename)
+    public function deleteItemImage(InventoryItem $item, string $filename): void
     {
         $path = $this->getItemImagePath($item);
         $files = [$filename];
@@ -142,7 +141,7 @@ class ImageStorage
      * @param string $filename
      * @param int $width
      */
-    protected function resizeToWidth(InventoryItem $item, string $filename, int $width)
+    private function resizeToWidth(InventoryItem $item, string $filename, int $width): void
     {
         $itemPath = $this->getItemImagePath($item);
         $resizer = new ImageResize($itemPath . DIRECTORY_SEPARATOR . $filename);
@@ -160,7 +159,7 @@ class ImageStorage
      * @param int $width
      * @param int $height
      */
-    protected function resizeToWidthAndHeight(InventoryItem $item, string $filename, int $width, int $height)
+    private function resizeToWidthAndHeight(InventoryItem $item, string $filename, int $width, int $height): void
     {
         $itemPath = $this->getItemImagePath($item);
         $resizer = new ImageResize($itemPath . DIRECTORY_SEPARATOR . $filename);
@@ -173,7 +172,7 @@ class ImageStorage
     /**
      * Get a filename for a width based on the original filename
      */
-    protected function getFilenameWidth(string $filename, int $width)
+    private function getFilenameWidth(string $filename, int $width): string
     {
         $fileparts = explode('.', $filename);
         return $fileparts[0] . 'w' . $width . '.' . $fileparts[1];
@@ -182,7 +181,7 @@ class ImageStorage
     /**
      * Get a filename for a width and height based on the original filename
      */
-    protected function getFilenameWidthHeight(string $filename, int $width, int $height)
+    private function getFilenameWidthHeight(string $filename, int $width, int $height): string
     {
         $fileparts = explode('.', $filename);
         return $fileparts[0] . 'w' . $width . 'h' . $height . '.' . $fileparts[1];
