@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use RuntimeException;
+
 class InventoryItem extends Persistable
 {
     /** @var string */
@@ -15,6 +17,9 @@ class InventoryItem extends Persistable
 
     /** @var string */
     protected $serialNumbers;
+
+    /** @var string */
+    protected $url;
 
     /** @var string */
     protected $notes;
@@ -104,13 +109,13 @@ class InventoryItem extends Persistable
      * Set all locations
      * 
      * @param string[] $locations
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function setLocations(array $locations)
     {
         foreach ($locations as $location) {
             if (!is_string($location)) {
-                throw new \RuntimeException('All item locations must be strings');
+                throw new RuntimeException('All item locations must be strings');
             }
         }
         $this->locations = $locations;
@@ -140,11 +145,11 @@ class InventoryItem extends Persistable
      * Set all types for this item
      * 
      * @param string[] $types
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function setTypes(array $types) 
     {
-        foreach ($types as $type) {
+        foreach ($types as &$type) {
             if (is_object($type)) {
                 $type = (string) $type;
             }
@@ -164,12 +169,12 @@ class InventoryItem extends Persistable
 
     /**
      * @param string $price
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function setPurchasePrice(string $price)
     {
         if (!is_numeric($price)) {
-            throw new \RuntimeException('Item price must be numeric');
+            throw new RuntimeException('Item price must be numeric');
         }
         $this->purchasePrice = $price;
     }
@@ -188,7 +193,7 @@ class InventoryItem extends Persistable
     {
         $price = null;
         if ($this->purchasePrice && $this->quantity) {
-            $price = \bcmul($this->purchasePrice, $this->quantity);
+            $price = bcmul($this->purchasePrice, $this->quantity);
         }
 
         return $price;
@@ -198,12 +203,12 @@ class InventoryItem extends Persistable
      * Set the individual value of an item
      * 
      * @param string $value
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function setValue(string $value)
     {
         if (!is_numeric($value)) {
-            throw new \RuntimeException('Item value must be numeric');
+            throw new RuntimeException('Item value must be numeric');
         }
         $this->value = $value;
     }
@@ -222,7 +227,7 @@ class InventoryItem extends Persistable
     {
         $value = null;
         if ($this->value && $this->quantity) {
-            $value = \bcmul($this->value, $this->quantity);
+            $value = bcmul($this->value, $this->quantity);
         }
 
         return $value;
@@ -264,5 +269,21 @@ class InventoryItem extends Persistable
     public function isDeleted(): bool
     {
         return $this->deleted;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUrl(): string
+    {
+        return $this->url;
+    }
+
+    /**
+     * @param string $url
+     */
+    public function setUrl(string $url): void
+    {
+        $this->url = $url;
     }
 }

@@ -10,6 +10,7 @@ use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -138,17 +139,16 @@ class InventoryController extends AbstractController
             ->add('quantity', IntegerType::class)
             ->add('manufacturer', TextType::class, ['required' => false])
             ->add('model', TextType::class, ['required' => false])
+            ->add('url', UrlType::class, ['required' => true])
             ->add('serialNumbers', TextareaType::class, ['required' => false])
             ->add(
                 'purchasePrice', 
                 MoneyType::class, 
-                // TODO: Make currency configurable
                 ['label' => 'Purchase price (per item)', 'required' => false, 'currency' => $currency]
             )
             ->add(
                 'value', 
                 MoneyType::class, 
-                // TODO: Make currency configurable
                 ['label' => 'Current value (per item)', 'required' => false, 'currency' => $currency]
             )
             ->add(

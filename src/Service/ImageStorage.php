@@ -134,6 +134,19 @@ final class ImageStorage
         }
     }
 
+    public function getImageBase64(InventoryItem $item, string $filename, int $width = null, int $height = null): string
+    {
+        $path = $this->getFilePath($item, $filename, $width, $height);
+        if (empty($path)) {
+            return '';
+        }
+        $data = file_get_contents($path);
+        if (empty($data)) {
+            return '';
+        }
+        return base64_encode($data);
+    }
+
     /**
      * Resize an unscaled image to a width.
      * 
