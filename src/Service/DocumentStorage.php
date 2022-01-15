@@ -9,6 +9,7 @@ use MongoDB\BSON\ObjectId;
 use App\Entity\InventoryItem;
 use App\Entity\Tag;
 use MongoDB\Collection;
+use MongoDB\Driver\Cursor;
 use RuntimeException;
 
 final class DocumentStorage
@@ -54,6 +55,9 @@ final class DocumentStorage
         return $this->getClient()->inventory->tags;
     }
 
+    /**
+     * @return Cursor<InventoryItem>
+     */
     public function getInventoryItems(): iterable
     {
         return $this->getInventoryCollection()->find(

@@ -8,7 +8,7 @@
             <tr>
                 <th scope="row">{{ header }}</th>
                 {% if currency %}
-                    <td>{{ data|format_currency('USD') }}</td>
+                    <td>{{ data|format_currency(app_currency) }}</td>
                 {% else %}
                     <td>{{ data }}</td>                
                 {% endif %}

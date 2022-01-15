@@ -3,10 +3,13 @@
 parameters:
     locale: 'en'
     app.mongodb.url: '%env(string:DATABASE_URL)%'
+    app.currency: '%env(string:APP_CURRENCY)%'
 
 services:
     # default configuration for services in *this* file
     _defaults:
+        bind:
+            string $appCurrency: '%app.currency%'
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         public: false       # Allows optimizing the container by removing unused services; this also means

@@ -21,6 +21,7 @@ use App\Service\ImageStorage;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+// TODO: remove business logic from controller
 class InventoryController extends AbstractController
 {
     public function __construct(protected DocumentStorage $docs, protected ImageStorage $images)
@@ -65,7 +66,7 @@ class InventoryController extends AbstractController
 
     #[Route('/inventory/add', name: 'inventory_add')]
     #[Route('/inventory/{id}/edit', name: 'inventory_edit')]
-    public function editItem(Request $request, $id = null)
+    public function editItem(Request $request, string $appCurrency, $id = null)
     {
         $errors = [];
         if ($id) {
@@ -87,7 +88,7 @@ class InventoryController extends AbstractController
             return $this->redirectToRoute('inventory_list');
         }
 
-        $form = $this->getItemForm($request, $item);
+        $form = $this->getItemForm($request, $item, $appCurrency);
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
@@ -122,7 +123,7 @@ class InventoryController extends AbstractController
         );
     }
 
-    private function getItemForm(Request $request, InventoryItem $item)
+    private function getItemForm(Request $request, InventoryItem $item, string $currency)
     {
         $tagAttributes = [
             'attr' => ['class' => 'tags'],
@@ -142,13 +143,13 @@ class InventoryController extends AbstractController
                 'purchasePrice', 
                 MoneyType::class, 
                 // TODO: Make currency configurable
-                ['label' => 'Purchase price (per item)', 'required' => false, 'currency' => 'USD']
+                ['label' => 'Purchase price (per item)', 'required' => false, 'currency' => $currency]
             )
             ->add(
                 'value', 
                 MoneyType::class, 
                 // TODO: Make currency configurable
-                ['label' => 'Current value (per item)', 'required' => false, 'currency' => 'USD']
+                ['label' => 'Current value (per item)', 'required' => false, 'currency' => $currency]
             )
             ->add(
                 'types',
