@@ -3,14 +3,16 @@
 {% block title %}{{ item.name }}{% endblock %}
 
 {% block body %}
-    {% macro scalarrow(header, data, currency) %}
+    {% macro scalarrow(header, data, type, extra) %}
         {% if data %}
             <tr>
                 <th scope="row">{{ header }}</th>
-                {% if currency %}
+                {% if type == "currency" %}
                     <td>{{ data|format_currency(app_currency) }}</td>
+                {% elseif type == "url" %}
+                    <td><a target="_blank" href="{{ data }}">{{ extra.title ?? data }}</a></td>
                 {% else %}
-                    <td>{{ data }}</td>                
+                    <td>{{ data }}</td>
                 {% endif %}
             </tr>
         {% endif %}
@@ -30,19 +32,20 @@
     <table class="table table-borderless item">
         <tbody>
             {{ table.scalarrow('Quantity', item.quantity) }}
-            {{ table.scalarrow('Purchase Price (x 1)', item.purchasePrice, true) }}
+            {{ table.scalarrow('Purchase Price (x 1)', item.purchasePrice, "currency") }}
             {{ table.scalarrow('Manufacturer', item.manufacturer) }}
+            {{ table.scalarrow('Link', item.url, "url") }}
             {{ table.scalarrow('Model', item.model) }}
             {{ table.scalarrow('Serial Numbers', item.serialNumbers|nl2br) }}
-            {{ table.scalarrow('Current Value (x 1)', item.value, true) }}
+            {{ table.scalarrow('Current Value (x 1)', item.value, "currency") }}
             {% if item.quantity > 1 %}
-                {{ table.scalarrow("Purchase Price (x #{item.quantity})", item.totalPurchasePrice, true) }}
-                {{ table.scalarrow("Current Value (x #{item.quantity})", item.totalValue, true) }}
+                {{ table.scalarrow("Purchase Price (x #{item.quantity})", item.totalPurchasePrice, "currency") }}
+                {{ table.scalarrow("Current Value (x #{item.quantity})", item.totalValue, "currency") }}
             {% endif %}
             {{ table.tagrow('Types / Tags', 'types', item.types) }}
             {{ table.tagrow('Location(s)', 'locations', item.locations) }}
             {% if item.acquiredDate %}
-                {{ table.scalarrow('Acquired', item.acquiredDate|date("m/d/Y")) }}  {# TODO: Localize date format #}
+                {{ table.scalarrow('Acquired', item.acquiredDate|date("Y-m-d")) }}  {# TODO: Localize date format #}
             {% endif %}
             {{ table.scalarrow('Notes', item.notes) }}
 

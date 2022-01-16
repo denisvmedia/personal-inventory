@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use DateTime;
+use MongoDB\BSON\ObjectId;
 use RuntimeException;
 
 class InventoryItem extends Persistable
@@ -44,6 +46,15 @@ class InventoryItem extends Persistable
 
     /** @var bool Soft delete */
     protected $deleted = false;
+
+    public function __construct(?string $id = null)
+    {
+        parent::__construct();
+
+        if ('' !== $id && null !== $id) {
+            $this->id = new ObjectId($id);
+        }
+    }
 
     public function setName(string $name) 
     {
@@ -243,19 +254,23 @@ class InventoryItem extends Persistable
         return $this->quantity;
     }
 
-    public function setAcquiredDate(\DateTime $acquiredDate = null)
+    public function setAcquiredDate(DateTime|string $acquiredDate = null)
     {
-        if ($acquiredDate) {
+        if (is_string($acquiredDate)) {
+            $acquiredDate = new DateTime('@'.$acquiredDate);
+        }
+
+        if (null !== $acquiredDate) {
             $this->acquiredDate = $acquiredDate->format('U');
         } else {
             $this->acquiredDate = null;
         }
     }
 
-    public function getAcquiredDate() : ?\DateTime
+    public function getAcquiredDate() : ?DateTime
     {
         if ($this->acquiredDate) {
-            return new \DateTime('@' . $this->acquiredDate);
+            return new DateTime('@' . $this->acquiredDate);
         } else {
             return null;
         }

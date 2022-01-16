@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Storage;
 
-use MongoDB\Client;
-use MongoDB\BSON\ObjectId;
 use App\Entity\InventoryItem;
 use App\Entity\Tag;
+use MongoDB\BSON\ObjectId;
+use MongoDB\Client;
 use MongoDB\Collection;
 use MongoDB\Driver\Cursor;
 use RuntimeException;
@@ -16,7 +16,7 @@ final class DocumentStorage
 {
     private bool $inited = false;
 
-    public function __construct(private Client $mongo)
+    public function __construct(private Client $mongo, private ImageStorage $imageStorage)
     {
     }
 
@@ -77,7 +77,7 @@ final class DocumentStorage
     public function getInventoryItem(string $id): ?InventoryItem
     {
         $item = $this->getInventoryCollection()->findOne([
-            '_id' => new ObjectId("$id"), 'deleted' => false
+            '_id' => new ObjectId($id), 'deleted' => false
         ]);
 
         if (null === $item) {
@@ -191,9 +191,6 @@ final class DocumentStorage
         }
     }
 
-    /**
-     * Soft delete an inventory item
-     */
     public function deleteInventoryItem(InventoryItem $item): void
     {
         $item->setDeleted(true);
@@ -205,6 +202,7 @@ final class DocumentStorage
         );
         $this->saveInventoryItemTags(Tag::CATEGORY_ITEM_TYPE, $item->getTypes(), []);
         $this->saveInventoryItemTags(Tag::CATEGORY_ITEM_LOCATION, $item->getLocations(), []);
+        $this->imageStorage->deleteItemImages($item);
     }
 
     /**

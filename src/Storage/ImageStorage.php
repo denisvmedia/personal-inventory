@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
-
-use DirectoryIterator;
-use Gumlet\ImageResize;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+namespace App\Storage;
 
 use App\Entity\InventoryItem;
+use App\Storage\File\FileInterface;
+use DirectoryIterator;
+use Gumlet\ImageResize;
+use Symfony\Component\Filesystem\Filesystem;
 
 final class ImageStorage
 {
@@ -33,29 +33,19 @@ final class ImageStorage
      * Save images and their resized versions during upload.
      * 
      * @param InventoryItem $item
-     * @param UploadedFile[] $files
+     * @param FileInterface[] $files
      */
     public function saveItemImages(InventoryItem $item, array $files)
     {
+        $fs = new Filesystem();
         $itemPath = $this->getItemImagePath($item);
-        if (!file_exists($itemPath)) {
-            mkdir($itemPath);
+        if (!$fs->exists($itemPath)) {
+            $fs->mkdir($itemPath);
         }
-        $time = time();
-        $count = 0;
         foreach ($files as $file) {
-            if (!$file->isValid()) {
-                throw new \RuntimeException($file->getErrorMessage());
-            }
-            $extension = $file->guessExtension();
-            if (!$extension) {
-                $extension = 'bin';
-            }
-            $originalFilename = $time . 'i' . $count . '.' . $extension;
-            $file->move($itemPath, $originalFilename);
-            $this->resizeToWidth($item, $originalFilename, self::WIDTH_SMALL);
-            $this->resizeToWidthAndHeight($item, $originalFilename, self::WIDTH_SMALL, self::HEIGHT_SMALL);
-            $count++;
+            $file->upload($itemPath);
+            $this->resizeToWidth($item, $file->getFilename(), self::WIDTH_SMALL);
+            $this->resizeToWidthAndHeight($item, $file->getFilename(), self::WIDTH_SMALL, self::HEIGHT_SMALL);
         }
     }
 
@@ -127,11 +117,19 @@ final class ImageStorage
         $files = [$filename];
         // Also delete any scaled images
         $files[] = $this->getFilenameWidth($filename, self::WIDTH_SMALL);
+
         foreach ($files as $filename) {
             if (file_exists($path . DIRECTORY_SEPARATOR . $filename)) {
                 unlink($path . DIRECTORY_SEPARATOR . $filename);
             }
         }
+    }
+
+    public function deleteItemImages(InventoryItem $item): void
+    {
+        $path = $this->getItemImagePath($item);
+        $fs = new Filesystem();
+        $fs->remove($path);
     }
 
     public function getImageBase64(InventoryItem $item, string $filename, int $width = null, int $height = null): string

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Tag;
+use App\Storage\DocumentStorage;
+use App\Storage\ImageStorage;
 
 final class TagManager
 {

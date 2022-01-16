@@ -28,7 +28,7 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
-    App\Service\ImageStorage:
+    App\Storage\ImageStorage:
         arguments:
             $basePath: '%kernel.project_dir%/data/images'
 
@@ -37,6 +37,6 @@ services:
         arguments:
             - '%app.mongodb.url%'
 
-    App\Service\DocumentStorage:
+    App\Storage\DocumentStorage:
         arguments:
             $mongo: '@mongo.db.client'

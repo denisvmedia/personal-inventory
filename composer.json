@@ -8,6 +8,7 @@
         "ext-bcmath": "*",
         "ext-iconv": "*",
         "ext-mongodb": "*",
+        "ext-simplexml": "*",
         "doctrine/annotations": "^1.11",
         "gumlet/php-image-resize": "1.9.*",
         "mongodb/mongodb": "^1.4",

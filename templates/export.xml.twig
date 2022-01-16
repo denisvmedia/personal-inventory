@@ -2,13 +2,12 @@
 <items>
     {# @var \App\Entity\InventoryItem[] items #}
     {% for item in items %}
-        <item>
-            <id>{{ item.id }}</id>
+        <item id="{{ item.id|escape('html_attr') }}">
             <name>{{ item.name }}</name>
             <manufacturer>{{ item.manufacturer }}</manufacturer>
             <model>{{ item.model }}</model>
             <url>{{ item.url }}</url>
-            <serialnumbers>{{ item.serialNumbers }}</serialnumbers>
+            <serialNumbers>{{ item.serialNumbers }}</serialNumbers>
             <notes>{{ item.notes }}</notes>
             {% if item.locations is empty %}
                 <locations/>
@@ -31,8 +30,8 @@
             <purchasePrice>{{ item.purchasePrice }}</purchasePrice>
             <currentPriceValue>{{ item.value }}</currentPriceValue>
             <quantity>{{ item.quantity }}</quantity>
-            {% if item.acquiredDate is null %}
-                <acquiredDate>{{ item.acquiredDate }}</acquiredDate>
+            {% if item.acquiredDate is not null %}
+                <acquiredDate>{{ item.acquiredDate|date('U') }}</acquiredDate>
             {% else %}
                 <acquiredDate/>
             {% endif %}
@@ -41,14 +40,14 @@
             {% else %}
                 <deleted>0</deleted>
             {% endif %}
-            {# @var \App\Service\ImageStorage imagesSvc #}
+            {# @var \App\Storage\ImageStorage imagesSvc #}
             {% set images = imagesSvc.itemImages(item) %}
             {% if images is empty %}
                 <images/>
             {% else %}
                 <images>
                     {% for image in images %}
-                        <image>{{ imagesSvc.imageBase64(item, image) }}</image>
+                        <image filename="{{ image|escape('html_attr') }}">{{ imagesSvc.imageBase64(item, image) }}</image>
                     {% endfor %}
                 </images>
             {% endif %}

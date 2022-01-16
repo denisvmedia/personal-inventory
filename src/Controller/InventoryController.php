@@ -2,235 +2,83 @@
 
 namespace App\Controller;
 
+use App\Forms\InventoryItemEditFormHandler;
+use App\Inventory\DTO\Query;
+use App\Inventory\Inventory;
+use App\Storage\ImageStorage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\MoneyType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-
-use App\Entity\InventoryItem;
-use App\Entity\Tag;
-use App\Service\DocumentStorage;
-use App\Service\ImageStorage;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-// TODO: remove business logic from controller
-class InventoryController extends AbstractController
+final class InventoryController extends AbstractController
 {
-    public function __construct(protected DocumentStorage $docs, protected ImageStorage $images)
+    public function __construct(private ImageStorage $images, private Inventory $inventory)
     {
     }
 
     #[Route('/inventory', name: 'inventory_list')]
     #[Route('/inventory/tags/{category}/{tag}', name: 'inventory_list_by_tag')]
-    public function listItems(Request $request, string $category = null, string $tag = null)
+    public function listItems(Request $request, string $category = null, string $tag = null): Response
     {
-        $breadcrumb = '';
-        if ($category && $tag) {
-            $items = $this->docs->getInventoryItemsByTag($category, $tag);
-            $breadcrumb = $tag;
-        } elseif ($query = $request->query->get('q', '')) {
-            $items = $this->docs->searchInventoryItems($query);
-            $breadcrumb = $query;
-        } else {
-            $items = $this->docs->getInventoryItems();
-        }
+        $itemList = $this->inventory->listItems(new Query($request, $category, $tag));
         return $this->render(
             'inventory/list.html.twig', 
             [
-                'items' => $items,
-                'breadcrumb' => $breadcrumb
+                'items' => $itemList->items,
+                'breadcrumb' => $itemList->breadcrumb,
             ]
         );
     }
 
     #[Route('/inventory/{id<[0-9a-fA-F]{24}>}', name: 'inventory_get')]
-    public function getItem($id)
+    public function getItem(string $id): Response
     {
-        $item = $this->docs->getInventoryItem($id);
-        if (!$item) {
-            throw $this->createNotFoundException('Item not found');
-        }
+        $item = $this->inventory->getItem($id);
         return $this->render(
             'inventory/view.html.twig', 
-            ['item' => $item, 'images' => $this->images->getItemImages($item)]
+            [
+                'item' => $item,
+                'images' => $this->images->getItemImages($item),
+            ]
         );
     }
 
     #[Route('/inventory/add', name: 'inventory_add')]
     #[Route('/inventory/{id}/edit', name: 'inventory_edit')]
-    public function editItem(Request $request, string $appCurrency, $id = null)
+    public function editItem(Request $request, InventoryItemEditFormHandler $formHandler, ?string $id = null): Response
     {
-        $errors = [];
-        if ($id) {
-            $item = $this->docs->getInventoryItem($id);
-            if (!$item) {
-                throw $this->createNotFoundException('Item not found');
-            }
-            $images = $this->images->getItemImages($item);
-            $mode = 'edit';
-        } else {
-            $item = new InventoryItem();
-            $images = [];
-            $mode = 'new';
-        }
+        $result = $formHandler->submit($request, $id);
 
-        // Handle delete
-        if ($request->isMethod('POST') && $request->request->get('submit', 'submit') === 'delete') {
-            $this->docs->deleteInventoryItem($item);
-            return $this->redirectToRoute('inventory_list');
-        }
-
-        $form = $this->getItemForm($request, $item, $appCurrency);
-        $form->handleRequest($request);
-        
-        if ($form->isSubmitted() && $form->isValid()) {
-            $item = $form->getData();
-            try {
-                $id = $this->docs->saveInventoryItem($item);
-                $this->images->saveItemImages($item, $request->files->get('form')['images']);
-                $this->deleteImages($request, $item);
-            } catch (\Exception $e) {
-                $errors[] = $e->getMessage();
-            }
-            if (!$errors) {
-                if ($request->request->get('submit', 'submit') === 'submit_add') {
-                    return $this->redirectToRoute('inventory_add');
-                } elseif ($request->query->get('return_to', '') === 'list') {
-                    return $this->redirectToRoute('inventory_list');
-                } else {
-                    return $this->redirectToRoute('inventory_get', ['id' => $id]);
-                }
+        if ($request->getMethod() === 'POST' && empty($result->errors)) {
+            if ($request->request->get('submit', 'submit') === 'submit_add') {
+                return $this->redirectToRoute('inventory_add');
+            } elseif ($request->query->get('return_to', '') === 'list') {
+                return $this->redirectToRoute('inventory_list');
+            } else {
+                return $this->redirectToRoute('inventory_get', ['id' => $id]);
             }
         }
 
         return $this->render(
             'inventory/edit.html.twig', 
             [
-                'form' => $form->createView(), 
-                'mode' => $mode, 
-                'itemid' => $item->getId(),
-                'images' => $images,
-                'errors' => $errors
+                'form' => $result->form->createView(),
+                'mode' => null === $id ? 'new' : 'edit',
+                'itemid' => $id,
+                'images' => $this->images->getItemImages($result->item),
+                'errors' => $result->errors,
             ]
         );
     }
 
-    private function getItemForm(Request $request, InventoryItem $item, string $currency)
+    #[Route('/inventory/{id}/delete', name: 'inventory_delete', methods: ['POST'])]
+    public function deleteItem(?string $id = null): Response
     {
-        $tagAttributes = [
-            'attr' => ['class' => 'tags'],
-            'expanded' => false,
-            'help' => 'Hit enter or comma to create new tags',
-            'multiple' => true,
-            'required' => false
-        ];
-
-        return $this->createFormBuilder($item)
-            ->add('name', TextType::class)
-            ->add('quantity', IntegerType::class)
-            ->add('manufacturer', TextType::class, ['required' => false])
-            ->add('model', TextType::class, ['required' => false])
-            ->add('url', UrlType::class, ['required' => true])
-            ->add('serialNumbers', TextareaType::class, ['required' => false])
-            ->add(
-                'purchasePrice', 
-                MoneyType::class, 
-                ['label' => 'Purchase price (per item)', 'required' => false, 'currency' => $currency]
-            )
-            ->add(
-                'value', 
-                MoneyType::class, 
-                ['label' => 'Current value (per item)', 'required' => false, 'currency' => $currency]
-            )
-            ->add(
-                'types',
-                ChoiceType::class,
-                [
-                    'label' => 'Type / Tags',
-                    'choices' => $this->getTags($request, 'types', Tag::CATEGORY_ITEM_TYPE),
-                ] + $tagAttributes
-            )
-            ->add(
-                'locations',
-                ChoiceType::class,
-                [
-                    'label' => 'Location(s)',
-                    'choices' => $this->getTags($request, 'locations', Tag::CATEGORY_ITEM_LOCATION),
-                ] + $tagAttributes
-            )
-            ->add(
-                'acquiredDate', 
-                DateType::class,
-                [
-                    'label' => 'Date Acquired', 
-                    'widget' => 'single_text',
-                    'required' => false
-                ]
-            )
-            ->add(
-                'notes', 
-                TextareaType::class,
-                ['required' => false])
-            ->add(
-                'images',
-                FileType::class,
-                [
-                    'label' => 'Add Images', 
-                    'multiple' => true, 
-                    'mapped' => false, 
-                    'required' => false,
-                    'attr' => ['accept' => 'image/*']
-                ]
-            )
-            ->getForm();
-    }
-
-    /**
-     * Get tags, including any new tags POSTed through the form
-     * 
-     * @param Request $request HTTP request
-     * @param string $field Form and entity field name
-     * @param string $tagCategory
-     * @return string[]
-     */
-    private function getTags(Request $request, $field, $tagCategory)
-    {
-        $tags = [];
-        if ($request->getMethod() === 'POST') {
-            $formInput = $request->request->all('form');
-            if (array_key_exists($field, $formInput)) {
-                $tags = array_combine($formInput[$field], $formInput[$field]);
-            }
-        }
-        foreach ($this->docs->getTags($tagCategory) as $tag) {
-            $tags[(string) $tag] = (string) $tag;
-        }
-        return $tags;
-    }
-
-    /**
-     * Delete images from form POST
-     * 
-     * @param Request $request
-     * @param InventoryItem $item
-     */
-    private function deleteImages(Request $request, InventoryItem $item): void
-    {
-        $formInput = $request->request->get('delete_images');
-        if ($formInput) {
-            foreach ($formInput as $filename) {
-                $this->images->deleteItemImage($item, $filename);
-            }
-        }
+        $this->inventory->delete($id);
+        return $this->redirectToRoute('inventory_list');
     }
 
     /**
@@ -241,11 +89,8 @@ class InventoryController extends AbstractController
     #[Route('/inventory/{id}/images/{filename}', name: 'inventory_image')]
     public function image(Request $request, $id, $filename): Response
     {
-        $item = $this->docs->getInventoryItem($id);
-        if (!$item) {
-            throw $this->createNotFoundException('Item not found');
-        }
-        if ($request->getMethod() === 'POST' && $request->request->get['action'] === 'delete') {
+        $item = $this->inventory->getItem($id);
+        if ($request->getMethod() === 'POST' && $request->request->get('action') === 'delete') {
             $this->images->deleteItemImage($item, $filename);
             return new JsonResponse(['success' => 1]);
         } else {
