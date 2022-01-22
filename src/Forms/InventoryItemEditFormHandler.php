@@ -40,7 +40,7 @@ final class InventoryItemEditFormHandler
             $item = $form->getData();
             try {
                 $id = $this->docs->saveInventoryItem($item);
-                $images = $request->files->get('form');
+                $images = $request->files->get('inventory_item');
                 if (!empty($images)) {
                     $this->images->saveItemImages($item, UploadedFile::fromUploadedFiles($images));
                     $this->deleteImages($request, $item);
@@ -61,7 +61,7 @@ final class InventoryItemEditFormHandler
      */
     private function deleteImages(Request $request, InventoryItem $item): void
     {
-        $formInput = $request->request->get('delete_images');
+        $formInput = $request->request->all('delete_images');
         if ($formInput) {
             foreach ($formInput as $filename) {
                 $this->images->deleteItemImage($item, $filename);

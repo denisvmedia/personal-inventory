@@ -10,13 +10,18 @@
     {{ form_start(form) }}
     {{ form_widget(form) }}
 
+    <div class="form-group">
+        <label class="form-control-label">New Images</label>
+        <div id="new-images">
+        </div>
+    </div>
     {% if images %}
         <div class="form-group">
             <label class="form-control-label">Current Images</label>
-            <div>
+            <div id="existing-images">
                 {% for filename in images %}
                     <div class="d-inline-block m-1 text-center">
-                        <img style="width:100px;display:block" src="{{ path('inventory_image', {'id': itemid, 'filename': filename}) }}?w=200">
+                        <img style="min-width:50px;display:block" class="img-thumbnail" src="{{ path('inventory_image', {'id': itemid, 'filename': filename}) }}?w=200">
                         <div class="form-check" style="width:100%">
                             <label class="form-check-label">
                                 <input class="form-check-input" type="checkbox" name="delete_images[]" value="{{ filename }}">

@@ -76,7 +76,7 @@ class InventoryItem extends Persistable
         return $this->manufacturer;
     }
 
-    public function setModel(string $model) 
+    public function setModel(?string $model)
     {
         $this->model = $model;
     }
@@ -86,7 +86,7 @@ class InventoryItem extends Persistable
         return $this->model;
     }
 
-    public function setSerialNumbers(string $serialNumbers) 
+    public function setSerialNumbers(?string $serialNumbers)
     {
         $this->serialNumbers = $serialNumbers;
     }
@@ -96,7 +96,7 @@ class InventoryItem extends Persistable
         return $this->serialNumbers;
     }
 
-    public function setNotes(string $notes)
+    public function setNotes(?string $notes)
     {
         $this->notes = $notes;
     }
@@ -111,7 +111,7 @@ class InventoryItem extends Persistable
      * 
      * @param string $location
      */
-    public function addLocation(string $location) 
+    public function addLocation(string $location)
     {
         $this->locations[] = $location;
     }

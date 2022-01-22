@@ -28,3 +28,15 @@ h1 {
     background-color: #c0c0c0;
     height: 200px;
 }
+
+#new-images .img-thumbnail, #existing-images .img-thumbnail, .layout-view.img-thumbnail {
+    max-width: 200px;
+    max-height: 200px;
+}
+
+/* set a max-width for horizontal fluid layout and make it centered */
+.container-fluid {
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 1600px; /* or 950px */
+}

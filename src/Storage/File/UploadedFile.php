@@ -44,7 +44,9 @@ final class UploadedFile implements FileInterface
 
         $count = 0;
         foreach ($uploadedFiles as $uploadedFile) {
-            $result[] = new self($uploadedFile, $count++);
+            foreach($uploadedFile as $file) {
+                $result[] = new self($file, $count++);
+            }
         }
 
         return $result;
