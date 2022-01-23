@@ -30,7 +30,7 @@
                 {% elseif type == "notes" %}
                     <td><pre>{{ data }}</pre></td>
                 {% else %}
-                    <td>{{ data }}</td>
+                    <td>{{ data|nl2br }}</td>
                 {% endif %}
             </tr>
         {% endif %}
@@ -59,7 +59,7 @@
             {{ table.scalarrow('Manufacturer', item.manufacturer) }}
             {{ table.scalarrow('Link', item.url, "url") }}
             {{ table.scalarrow('Model', item.model) }}
-            {{ table.scalarrow('Serial Numbers', item.serialNumbers|nl2br) }}
+            {{ table.scalarrow('Serial Numbers', item.serialNumbers) }}
             {{ table.tagrow('Types / Tags', 'types', item.types) }}
             {{ table.tagrow('Location(s)', 'locations', item.locations) }}
             {% if item.acquiredDate %}
