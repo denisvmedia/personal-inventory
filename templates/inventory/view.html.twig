@@ -27,8 +27,6 @@
                     <td>{{ data|format_currency(app_currency) }}</td>
                 {% elseif type == "url" %}
                     <td><a target="_blank" href="{{ data }}">{{ extra.title ?? data }}&nbsp;<i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i></a></td>
-                {% elseif type == "notes" %}
-                    <td><pre>{{ data }}</pre></td>
                 {% else %}
                     <td>{{ data|nl2br }}</td>
                 {% endif %}
