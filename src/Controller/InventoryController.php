@@ -58,7 +58,7 @@ final class InventoryController extends AbstractController
             } elseif ($request->query->get('return_to', '') === 'list') {
                 return $this->redirectToRoute('inventory_list');
             } else {
-                return $this->redirectToRoute('inventory_get', ['id' => $id]);
+                return $this->redirectToRoute('inventory_get', ['id' => $result->item->getId()]);
             }
         }
 

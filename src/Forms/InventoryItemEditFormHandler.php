@@ -36,6 +36,10 @@ final class InventoryItemEditFormHandler
         ]);
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && !$form->isValid()) {
+            $errors = ['Please fix form errors.'];
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $item = $form->getData();
             try {

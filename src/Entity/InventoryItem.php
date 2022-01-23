@@ -1,51 +1,62 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use DateTime;
 use MongoDB\BSON\ObjectId;
 use RuntimeException;
+use Symfony\Component\Validator\Constraints as Assert;
 
 class InventoryItem extends Persistable
 {
-    /** @var string */
-    protected $name;
+    #[Assert\Length(min: 3)]
+    protected string $name = '';
 
-    /** @var string */
-    protected $manufacturer;
+    protected ?string $manufacturer = null;
 
-    /** @var string */
-    protected $model;
+    protected ?string $model = null;
 
-    /** @var string */
-    protected $serialNumbers;
+    protected ?string $serialNumbers = null;
 
-    /** @var string */
-    protected $url;
+    #[Assert\Url]
+    protected ?string $url = null;
 
-    /** @var string */
-    protected $notes;
+    protected ?string $notes = null;
 
-    /** @var string[] */
-    protected $locations = [];
+    /**
+     * @var string[]
+     */
+    #[Assert\All([
+        new Assert\NotNull,
+        new Assert\Length(min: 3),
+        new Assert\Type('string'),
+    ])]
+    protected array $locations = [];
 
-    /** @var string[] */
-    protected $types = [];
+    /**
+     * @var string[]
+     */
+    #[Assert\All([
+        new Assert\NotNull,
+        new Assert\Length(min: 3),
+        new Assert\Type('string'),
+    ])]
+    protected array $types = [];
 
-    /** @var string */
-    protected $purchasePrice;
+    #[Assert\Type(type: 'numeric')]
+    protected ?string $purchasePrice = null;
 
-    /** @var string Individual item value */
-    protected $value;
+    #[Assert\Type(type: 'numeric')]
+    protected ?string $value = null;
 
-    /** @var int */
-    protected $quantity = 1;
+    #[Assert\GreaterThanOrEqual(1)]
+    protected int $quantity = 1;
 
-    /** @var int */
-    protected $acquiredDate;
+    protected int|string|null $acquiredDate = null;
 
-    /** @var bool Soft delete */
-    protected $deleted = false;
+    protected bool $deleted = false;
 
     public function __construct(?string $id = null)
     {
@@ -56,7 +67,7 @@ class InventoryItem extends Persistable
         }
     }
 
-    public function setName(string $name) 
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
@@ -76,7 +87,7 @@ class InventoryItem extends Persistable
         return $this->manufacturer;
     }
 
-    public function setModel(?string $model)
+    public function setModel(?string $model): void
     {
         $this->model = $model;
     }
@@ -86,7 +97,7 @@ class InventoryItem extends Persistable
         return $this->model;
     }
 
-    public function setSerialNumbers(?string $serialNumbers)
+    public function setSerialNumbers(?string $serialNumbers): void
     {
         $this->serialNumbers = $serialNumbers;
     }
@@ -96,7 +107,7 @@ class InventoryItem extends Persistable
         return $this->serialNumbers;
     }
 
-    public function setNotes(?string $notes)
+    public function setNotes(?string $notes): void
     {
         $this->notes = $notes;
     }
@@ -107,22 +118,17 @@ class InventoryItem extends Persistable
     }
 
     /**
-     * Add one location to the set of locations
-     * 
      * @param string $location
      */
-    public function addLocation(string $location)
+    public function addLocation(string $location): void
     {
         $this->locations[] = $location;
     }
 
     /**
-     * Set all locations
-     * 
      * @param string[] $locations
-     * @throws RuntimeException
      */
-    public function setLocations(array $locations)
+    public function setLocations(array $locations): void
     {
         foreach ($locations as $location) {
             if (!is_string($location)) {
@@ -133,8 +139,6 @@ class InventoryItem extends Persistable
     }
 
     /**
-     * Get all locations associated with this item
-     * 
      * @return string[]
      */
     public function getLocations() : array
@@ -147,18 +151,15 @@ class InventoryItem extends Persistable
      * 
      * @param string $type
      */
-    public function addType(string $type) 
+    public function addType(string $type) : void
     {
         $this->types[] = $type;
     }
 
     /**
-     * Set all types for this item
-     * 
      * @param string[] $types
-     * @throws RuntimeException
      */
-    public function setTypes(array $types) 
+    public function setTypes(array $types) : void
     {
         foreach ($types as &$type) {
             if (is_object($type)) {
@@ -169,8 +170,6 @@ class InventoryItem extends Persistable
     }
 
     /**
-     * Get all types (as strings) associated with this item
-     * 
      * @return string[]
      */
     public function getTypes() : array
@@ -178,11 +177,7 @@ class InventoryItem extends Persistable
         return $this->types;
     }
 
-    /**
-     * @param string $price
-     * @throws RuntimeException
-     */
-    public function setPurchasePrice(string $price)
+    public function setPurchasePrice(string $price): void
     {
         if (!is_numeric($price)) {
             throw new RuntimeException('Item price must be numeric');
@@ -197,25 +192,19 @@ class InventoryItem extends Persistable
 
     /**
      * Get total purchase price (individual price * quantity)
-     * 
+     *
      * @return string|null
      */
     public function getTotalPurchasePrice() : ?string
     {
         $price = null;
         if ($this->purchasePrice && $this->quantity) {
-            $price = bcmul($this->purchasePrice, $this->quantity);
+            $price = bcmul($this->purchasePrice, (string) $this->quantity);
         }
 
         return $price;
     }
 
-    /**
-     * Set the individual value of an item
-     * 
-     * @param string $value
-     * @throws RuntimeException
-     */
     public function setValue(string $value)
     {
         if (!is_numeric($value)) {
@@ -238,45 +227,44 @@ class InventoryItem extends Persistable
     {
         $value = null;
         if ($this->value && $this->quantity) {
-            $value = bcmul($this->value, $this->quantity);
+            $value = bcmul($this->value, (string) $this->quantity);
         }
 
         return $value;
     }
 
-    public function setQuantity(int $quantity)
+    public function setQuantity(int $quantity): void
     {
         $this->quantity = $quantity;
     }
 
-    public function getQuantity() : int
+    public function getQuantity(): int
     {
         return $this->quantity;
     }
 
-    public function setAcquiredDate(DateTime|string $acquiredDate = null)
+    public function setAcquiredDate(DateTime|string $acquiredDate = null): void
     {
         if (is_string($acquiredDate)) {
             $acquiredDate = new DateTime('@'.$acquiredDate);
         }
 
         if (null !== $acquiredDate) {
-            $this->acquiredDate = $acquiredDate->format('U');
+            $this->acquiredDate = (int) $acquiredDate->format('U');
         } else {
             $this->acquiredDate = null;
         }
     }
 
-    public function getAcquiredDate() : ?DateTime
+    public function getAcquiredDate(): ?DateTime
     {
         if ($this->acquiredDate) {
             return new DateTime('@' . $this->acquiredDate);
-        } else {
-            return null;
         }
+        return null;
     }
 
-    public function setDeleted(bool $deleted)
+    public function setDeleted(bool $deleted): void
     {
         $this->deleted = $deleted;
     }
@@ -286,17 +274,11 @@ class InventoryItem extends Persistable
         return $this->deleted;
     }
 
-    /**
-     * @return string
-     */
-    public function getUrl(): string
+    public function getUrl(): ?string
     {
         return $this->url;
     }
 
-    /**
-     * @param string $url
-     */
     public function setUrl(string $url): void
     {
         $this->url = $url;

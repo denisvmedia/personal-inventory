@@ -20,6 +20,7 @@
                 <th scope="col" class="text-right d-none d-md-table-cell">Location</th>
                 <th scope="col" class="text-right" style="width:4rem">Qty</th>
                 <th scope="col" class="text-right" style="width:10rem">Est. Value</th>
+                <th scope="col" class="text-right" style="width:1rem">Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -39,6 +40,21 @@
                         {% if item.totalValue %}
                             {{ item.totalValue|format_currency(app_currency) }}
                         {% endif %}
+                    </td>
+                    <td>
+                        <form>
+                            <button
+                                    formaction="{{ path('inventory_delete', {'id': item.id}) }}"
+                                    formmethod="post"
+                                    formnovalidate
+                                    type="submit"
+                                    class="btn btn-danger"
+                                    name="submit"
+                                    value="delete"
+                                    data-confirm="Are you sure you would like to delete this item?">
+                                <i class="far fa-trash-alt"></i>
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 {% set total_quantity = total_quantity + item.quantity %}

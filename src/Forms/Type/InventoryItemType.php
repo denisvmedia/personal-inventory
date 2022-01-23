@@ -46,7 +46,7 @@ final class InventoryItemType extends AbstractType
             ->add('quantity', IntegerType::class)
             ->add('manufacturer', TextType::class, ['required' => false])
             ->add('model', TextType::class, ['required' => false])
-            ->add('url', UrlType::class, ['required' => true])
+            ->add('url', UrlType::class, ['required' => false])
             ->add('serialNumbers', TextareaType::class, ['required' => false])
             ->add(
                 'purchasePrice',
@@ -119,7 +119,7 @@ final class InventoryItemType extends AbstractType
     {
         $tags = [];
         if ($request->getMethod() === 'POST') {
-            $formInput = $request->request->all('form');
+            $formInput = $request->request->all('inventory_item');
             if (array_key_exists($field, $formInput)) {
                 $tags = array_combine($formInput[$field], $formInput[$field]);
             }

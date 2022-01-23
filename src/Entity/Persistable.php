@@ -1,16 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
+use DateTime;
 use MongoDB\BSON\ObjectId;
+use ReflectionObject;
 
 abstract class Persistable implements \MongoDB\BSON\Persistable
 {
-    /** @var \MongoDB\BSON\ObjectId */
-    protected $id;
-
-    /** @var int */
-    protected $modifiedTime;
+    protected ObjectId $id;
+    protected int $modifiedTime;
 
     public function __construct()
     {
@@ -20,11 +21,11 @@ abstract class Persistable implements \MongoDB\BSON\Persistable
     /**
      * Implementation of \MongoDB\BSON\Persistable::bsonSerialize
      */
-    public function bsonSerialize()
+    public function bsonSerialize(): array|object
     {
         $data = ['_id' => $this->id];
 
-        $reflection = new \ReflectionObject($this);
+        $reflection = new ReflectionObject($this);
         foreach ($reflection->getProperties() as $property) {
             $name = $property->getName();
             if ($name !== 'id') {
@@ -38,11 +39,11 @@ abstract class Persistable implements \MongoDB\BSON\Persistable
     /**
      * Implementation of MongoDB\BSON\Persistable::bsonUnserialize
      */
-    public function bsonUnserialize(array $data)
+    public function bsonUnserialize(array $data): void
     {
         foreach ($data as $key => $value) {
             if ($key === '_id') {
-                $this->id = new ObjectId($value);
+                $this->id = new ObjectId((string)$value);
             } elseif (is_object($value) && is_a($value, 'ArrayObject')) {
                 $this->$key = $value->getArrayCopy();
             } else {
@@ -74,13 +75,13 @@ abstract class Persistable implements \MongoDB\BSON\Persistable
     /**
      * Set modified time to now
      */
-    public function setModifiedTime()
+    public function setModifiedTime(): void
     {
         $this->modifiedTime = time();
     }
 
-    public function getModifiedTime()
+    public function getModifiedTime(): DateTime
     {
-        return new \DateTime('@' . $this->modifiedTime);
+        return new DateTime('@' . $this->modifiedTime);
     }
 }
