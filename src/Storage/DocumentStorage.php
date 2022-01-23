@@ -163,11 +163,19 @@ final class DocumentStorage
      */
     private function saveInventoryItemTags(string $category, array $originalTagStrings, array $updatedTagStrings): void
     {
+        // TODO: note, this function can cause a race condition.
         $tags = [];
+        $collection = $this->getTagCollection();
         foreach (array_diff($originalTagStrings, $updatedTagStrings) as $removed) {
             if ($tag = $this->getTagByName($category, $removed)) {
                 $tag->decrementCount();
-                $tags[] = $tag;
+                if ($tag->getCount() === 0) {
+                    $collection->deleteOne(
+                        ['_id' => $tag->getObjectId()],
+                    );
+                } else {
+                    $tags[] = $tag;
+                }
             }
         }
         foreach (array_diff($updatedTagStrings, $originalTagStrings) as $added) {
@@ -180,7 +188,6 @@ final class DocumentStorage
             $tag->incrementCount();
             $tags[] = $tag;
         }
-        $collection = $this->getTagCollection();
         foreach ($tags as $tag) {
             $tag->setModifiedTime();
             $collection->replaceOne(

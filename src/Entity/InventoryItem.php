@@ -32,6 +32,10 @@ class InventoryItem extends Persistable
         new Assert\NotNull,
         new Assert\Length(min: 3),
         new Assert\Type('string'),
+        new Assert\Regex(
+            pattern: '/^[A-Z\-a-z0-9]+$/',
+            message: 'Value must consist of letters, digits or dashes.',
+        ),
     ])]
     protected array $locations = [];
 
@@ -42,6 +46,10 @@ class InventoryItem extends Persistable
         new Assert\NotNull,
         new Assert\Length(min: 3),
         new Assert\Type('string'),
+        new Assert\Regex(
+            pattern: '/^[A-Z\-a-z0-9]+$/',
+            message: 'Value must consist of letters, digits or dashes.',
+        ),
     ])]
     protected array $types = [];
 

@@ -1,7 +1,7 @@
 {# Single tag button #}
 {% macro tag(category, tag) %}
     <a class="btn btn-info" 
-       href="{{ path('inventory_list_by_tag', {'category': category, 'tag': tag}) }}">
+       href="{{ path('inventory_list_by_tag', {'category': category|url_encode, 'tag': tag|url_encode}) }}">
        {{ tag }}
     </a>
 {% endmacro %}

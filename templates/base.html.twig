@@ -41,7 +41,7 @@
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                 {% for tag in docs.getTopTags(category) %}
-                                    <a class="dropdown-item" href="{{ path('inventory_list_by_tag', {'category': category, 'tag': tag}) }}">{{ tag }}</a>
+                                    <a class="dropdown-item" href="{{ path('inventory_list_by_tag', {'category': category|url_encode, 'tag': tag|url_encode}) }}">{{ tag }}</a>
                                 {% endfor %}
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{{ path('tag_list', {'category': category}) }}">More...</a>
