@@ -32,7 +32,7 @@ RUN docker-php-source extract \
     && docker-php-source delete
 
 COPY .docker/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
-
+COPY .docker/php-fpm/inventory-php.ini /usr/local/etc/php/conf.d/inventory-php.ini
 
 #
 # debug base image
