@@ -19,6 +19,7 @@ use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints as Assert;
 
 final class InventoryItemType extends AbstractType
 {
@@ -95,7 +96,12 @@ final class InventoryItemType extends AbstractType
                     'multiple' => true,
                     'mapped' => false,
                     'required' => false,
-                    'attr' => ['accept' => 'image/*']
+                    'attr' => ['accept' => 'image/*'],
+                    'constraints' => [
+                        new Assert\All([
+                            new Assert\Image(maxWidth: 2000, maxHeight: 2000, maxSize: '2048k'),
+                        ]),
+                    ],
                 ]
             );
     }
