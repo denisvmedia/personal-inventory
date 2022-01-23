@@ -17,6 +17,8 @@ Advantages to using this system over a simple spreadsheet:
 Screenshots
 -----------
 
+Note, these screenshots are outdated.
+
 ![View an item](screenshots/view_item.png)
 ![List of items](screenshots/list_items.png)
 ![Edit an item](screenshots/edit_item.png)
@@ -40,16 +42,16 @@ We include a docker configuration to get up and running quickly and easily.  The
 1. Run `docker-compose up --build`.  Add `-d` to run it in the background.
 1. Open [https://inventory.devenv.test](https://inventory.devenv.test) in your browser.
 
-For any other type of setup, such as on a home network server, edit or override the settings in `docker-compose.yaml` and `docker/web/Dockerfile`.  To point to a MongoDB server other than the one included, edit the `.env.local` file.
+For any other type of setup, such as on a home network server, edit or override the settings in `docker-compose.yml` and `docker/web/Dockerfile`.  To point to a MongoDB server other than the one included, edit the `.env.local` file.
 
 ### Without Docker
 
 This personal inventory manager is a standard PHP web application. Requirements:
 
-- A web server running PHP 8.0
+- A web server running PHP 8.1
 - PHP extensions: bcmath, exif, gd, mongodb
 - PHP's composer package manager
-- MongoDB 5
+- MongoDB 4 or 5
 
 Setup:
 
@@ -61,13 +63,17 @@ Security
 --------
 
 There is no included user authentication, data encryption, or other security. This isn't intended to be run as-is
-on the open internet. If you'd like to secure the application and its data we suggest editing your web server
-configuration to include at least HTTP Basic Authentication and HTTPS.  Also block remote connections to MongoDB. 
+on the open internet. If you'd like to secure the application and its data you might need editing your web server
+configuration to include at least HTTP Basic Authentication and HTTPS. Also block remote connections to MongoDB. 
 *Caveat emptor*.
 
 TODO
 ----
 
+- Archived attribute.
+- Warranty information.
+- PDF invoice support separate from images.
 - PDF export useful for insurance purposes.
-- Links to various online stores to make it easy to order more of an item.  
+- Links to various online stores to make it easy to order more of an item.
+- Link to the goods and link to the seller (often it's one and the same link, but sometimes it can differ).
 - Configurable depreciation schedule to estimate current values.
