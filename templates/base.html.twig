@@ -71,7 +71,7 @@
         </nav>
 
         <main role="main" class="px-1 py-1 px-md-3 py-md-4">
-            <h1>{{ block('title') }}</h1>
+            <h1>{{ block('title') }}{% block h1 %}{% endblock %}</h1>
             {% block body %}{% endblock %}
         </main>
 

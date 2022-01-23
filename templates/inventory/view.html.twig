@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ item.name }}
+{% block title %}{{ item.name }}{% endblock %}
+{% block h1 %}
     <form class="d-inline">
         <button
                 formaction="{{ path('inventory_delete', {'id': item.id}) }}"
