@@ -4,3 +4,11 @@ services:
   nginx:
     environment:
       VIRTUAL_HOST: inventory.devenv.test
+
+  app:
+    environment:
+      - APP_CURRENCY=USD
+
+  dependencies:
+    environment:
+      - APP_CURRENCY=USD
