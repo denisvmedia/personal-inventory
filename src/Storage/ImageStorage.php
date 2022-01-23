@@ -8,6 +8,8 @@ use App\Entity\InventoryItem;
 use App\Storage\File\FileInterface;
 use DirectoryIterator;
 use Gumlet\ImageResize;
+use Imagine\Gd\Imagine;
+use Imagine\Image\Box;
 use Symfony\Component\Filesystem\Filesystem;
 
 final class ImageStorage
@@ -172,10 +174,24 @@ final class ImageStorage
      */
     private function resizeToWidthAndHeight(InventoryItem $item, string $filename, int $width, int $height): void
     {
+//        $itemPath = $this->getItemImagePath($item);
+//        $resizer = new ImageResize($itemPath . DIRECTORY_SEPARATOR . $filename);
+//        $resizer->crop($width, $height);
+//        $resizer->save(
+//            $itemPath . DIRECTORY_SEPARATOR . $this->getFilenameWidthHeight($filename, $width, $height)
+//        );
         $itemPath = $this->getItemImagePath($item);
-        $resizer = new ImageResize($itemPath . DIRECTORY_SEPARATOR . $filename);
-        $resizer->crop($width, $height);
-        $resizer->save(
+        list($iwidth, $iheight) = getimagesize($itemPath.DIRECTORY_SEPARATOR.$filename);
+        $ratio = $iwidth / $iheight;
+        if ($width / $height > $ratio) {
+            $width = intval($height * $ratio);
+        } else {
+            $height = intval($width / $ratio);
+        }
+
+        $imagine = new Imagine();
+        $photo = $imagine->open($itemPath.DIRECTORY_SEPARATOR.$filename);
+        $photo->resize(new Box($width, $height))->save(
             $itemPath . DIRECTORY_SEPARATOR . $this->getFilenameWidthHeight($filename, $width, $height)
         );
     }
