@@ -99,7 +99,7 @@ final class InventoryItemType extends AbstractType
                     'attr' => ['accept' => 'image/*'],
                     'constraints' => [
                         new Assert\All([
-                            new Assert\Image(maxWidth: 2000, maxHeight: 2000, maxSize: '2048k'),
+                            new Assert\Image(maxWidth: 4000, maxHeight: 4000, maxSize: '2048k'),
                         ]),
                     ],
                 ]
