@@ -20,6 +20,7 @@
                 <th scope="col" class="text-right d-none d-md-table-cell">Location</th>
                 <th scope="col" class="text-right" style="width:4rem">Qty</th>
                 <th scope="col" class="text-right" style="width:10rem">Est. Value</th>
+                <th scope="col" class="text-right" style="width:7rem">Actions</th>
                 <th scope="col" class="text-right" style="width:1rem">Delete</th>
             </tr>
         </thead>
@@ -41,14 +42,18 @@
                             {{ item.totalValue|format_currency(app_currency) }}
                         {% endif %}
                     </td>
-                    <td>
-                        <form>
+                    <td style="text-align: right">
+                        <a href="{{ path('inventory_get', {'id': item.id}) }}" class="btn btn-success d-inline-block"><i class="fas fa-eye"></i></a>
+                        <a href="{{ path('inventory_edit', {'id': item.id}) }}" class="btn btn-primary d-inline-block"><i class="far fa-edit"></i></a>
+                    </td>
+                    <td style="text-align: right">
+                        <form class="d-inline-block">
                             <button
                                     formaction="{{ path('inventory_delete', {'id': item.id}) }}"
                                     formmethod="post"
                                     formnovalidate
                                     type="submit"
-                                    class="btn btn-danger"
+                                    class="btn btn-danger d-inline-block"
                                     name="submit"
                                     value="delete"
                                     data-confirm="Are you sure you would like to delete this item?">
@@ -61,16 +66,17 @@
                 {% set total_value = total_value + item.totalValue %}
             {% else %}
                 <tr>
-                    <td colspan="4">No items. Would you like to <a href="{{ path('inventory_add') }}">add one</a>?</td>
+                    <td colspan="4">No items. Would you like to <a href="{{ path('inventory_add') }}"><i class="fas fa-plus-square"></i>&nbsp;&nbsp;add one</a>?</td>
                 </tr>
             {% endfor %}
         </tbody>
         <tfoot>
             <tr>
-                <td><a class="btn btn-primary" href="{{ path('inventory_add') }}?return_to=list">Add</a></td>
+                <td><a class="btn btn-primary" href="{{ path('inventory_add') }}?return_to=list"><i class="fas fa-plus-square"></i>&nbsp;&nbsp;Add</a></td>
                 <th scope="col" class="d-none d-md-table-cell"></th>
                 <th scope="col" class="text-right">{% if total_quantity %}{{ total_quantity }}{% endif %}</th>
                 <th scope="col" class="text-right">{% if total_value %}{{ total_value|format_currency(app_currency) }}{% endif %}</th>
+                <th scope="col" class="d-none d-md-table-cell"></th>
             </tr>
         </tfoot>
     </table>

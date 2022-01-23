@@ -1,6 +1,21 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ item.name }}{% endblock %}
+{% block title %}{{ item.name }}
+    <form class="d-inline">
+        <button
+                formaction="{{ path('inventory_delete', {'id': item.id}) }}"
+                formmethod="post"
+                formnovalidate
+                type="submit"
+                class="btn btn-danger"
+                name="submit"
+                value="delete"
+                data-confirm="Are you sure you would like to delete this item?">
+            <i class="far fa-trash-alt"></i>
+        </button>
+    </form>
+    <a class="btn btn-primary" href="{{ path('inventory_edit', {'id': item.id}) }}"><i class="fas fa-edit"></i>&nbsp;&nbsp;Edit</a>
+{% endblock %}
 
 {% block body %}
     {% macro scalarrow(header, data, type, extra) %}
@@ -10,7 +25,7 @@
                 {% if type == "currency" %}
                     <td>{{ data|format_currency(app_currency) }}</td>
                 {% elseif type == "url" %}
-                    <td><a target="_blank" href="{{ data }}">{{ extra.title ?? data }}</a></td>
+                    <td><a target="_blank" href="{{ data }}">{{ extra.title ?? data }}&nbsp;<i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i></a></td>
                 {% else %}
                     <td>{{ data }}</td>
                 {% endif %}
@@ -33,15 +48,15 @@
         <tbody>
             {{ table.scalarrow('Quantity', item.quantity) }}
             {{ table.scalarrow('Purchase Price (x 1)', item.purchasePrice, "currency") }}
-            {{ table.scalarrow('Manufacturer', item.manufacturer) }}
-            {{ table.scalarrow('Link', item.url, "url") }}
-            {{ table.scalarrow('Model', item.model) }}
-            {{ table.scalarrow('Serial Numbers', item.serialNumbers|nl2br) }}
             {{ table.scalarrow('Current Value (x 1)', item.value, "currency") }}
             {% if item.quantity > 1 %}
                 {{ table.scalarrow("Purchase Price (x #{item.quantity})", item.totalPurchasePrice, "currency") }}
                 {{ table.scalarrow("Current Value (x #{item.quantity})", item.totalValue, "currency") }}
             {% endif %}
+            {{ table.scalarrow('Manufacturer', item.manufacturer) }}
+            {{ table.scalarrow('Link', item.url, "url") }}
+            {{ table.scalarrow('Model', item.model) }}
+            {{ table.scalarrow('Serial Numbers', item.serialNumbers|nl2br) }}
             {{ table.tagrow('Types / Tags', 'types', item.types) }}
             {{ table.tagrow('Location(s)', 'locations', item.locations) }}
             {% if item.acquiredDate %}
@@ -54,8 +69,10 @@
                     <th scope="row">Images</th>
                     <td>
                         {% for filename in images %}
-                            <a href="{{ path('inventory_image', {'id': item.id, 'filename': filename}) }}">
-                                <img class="layout-view img-thumbnail" src="{{ path('inventory_image', {'id': item.id, 'filename': filename}) }}?w=200">
+                            <a class="pop" href="{{ path('inventory_image', {'id': item.id, 'filename': filename}) }}" data-toggle="lightbox" data-gallery="product-images">
+                                <img class="layout-view img-thumbnail"
+                                     data-full-src="{{ path('inventory_image', {'id': item.id, 'filename': filename}) }}"
+                                     src="{{ path('inventory_image', {'id': item.id, 'filename': filename}) }}?w=200">
                             </a>
                         {% endfor %}
                     </td>
@@ -64,5 +81,5 @@
         </tbody>
     </table>
 
-    <a class="btn btn-primary" href="{{ path('inventory_edit', {'id': item.id}) }}">Edit</a>
+    <a class="btn btn-secondary" href="{{ path('inventory_list') }}"><i class="fas fa-reply"></i>&nbsp;&nbsp;Back to list</a>
 {% endblock %}

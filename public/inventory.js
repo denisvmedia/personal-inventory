@@ -45,4 +45,15 @@ $(document).ready(function() {
 
         $(this).remove();
     });
+
+    // $('.pop').on('click', function(e) {
+    //     $('.imagepreview').attr('src', $(this).find('img').data('full-src'));
+    //     $('#imagemodal').modal('show');
+    //     return false;
+    // });
+
+    $(document).on('click', '[data-toggle="lightbox"]', function(event) {
+        event.preventDefault();
+        $(this).ekkoLightbox();
+    });
 });
