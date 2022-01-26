@@ -46,7 +46,7 @@ final class InventoryController extends AbstractController
         );
     }
 
-    #[Route('/inventory/{id<[0-9a-fA-F]{24}>}/print', name: 'inventory_get')]
+    #[Route('/inventory/{id<[0-9a-fA-F]{24}>}/print', name: 'inventory_print')]
     public function getItemPrint(string $id): Response
     {
         $item = $this->inventory->getItem($id);
