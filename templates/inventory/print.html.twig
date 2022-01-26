@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Inventory</title>
+    <style>@page { size: A4 }</style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/paper-css/0.3.0/paper.css">
+    <link href="/inventory-print.css" rel="stylesheet">
+</head>
+<body class="A4">
+    {% macro scalarrow(header, data, type, extra) %}
+        {% if data %}
+            <tr>
+                <th scope="row">{{ header }}</th>
+                {% if type == "currency" %}
+                    <td>{{ data|format_currency(app_currency) }}</td>
+                {% elseif type == "url" %}
+                    <td><a target="_blank" href="{{ data }}">{{ extra.title ?? data }}&nbsp;<i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i></a></td>
+                {% else %}
+                    <td>{{ data|nl2br }}</td>
+                {% endif %}
+            </tr>
+        {% endif %}
+    {% endmacro %}
+
+    {% macro tagrow(header, category, tags) %}
+        {% if tags %}
+            {% import 'macros.html.twig' as macros %}
+            <tr>
+                <th scope="row">{{ header }}</th>
+                <td>{{ tags|join(', ') }}</td>
+            </tr>
+        {% endif %}
+    {% endmacro %}
+    {% import _self as table %}
+
+    <section class="sheet padding-10mm">
+        <h1>{{ item.name }}</h1>
+        <table>
+        <tbody>
+            {{ table.scalarrow('Quantity', item.quantity) }}
+            {{ table.scalarrow('Purchase Price (x 1)', item.purchasePrice, "currency") }}
+            {{ table.scalarrow('Current Value (x 1)', item.value, "currency") }}
+            {% if item.quantity > 1 %}
+                {{ table.scalarrow("Purchase Price (x #{item.quantity})", item.totalPurchasePrice, "currency") }}
+                {{ table.scalarrow("Current Value (x #{item.quantity})", item.totalValue, "currency") }}
+            {% endif %}
+            {{ table.scalarrow('Manufacturer', item.manufacturer) }}
+            {{ table.scalarrow('Model', item.model) }}
+            {{ table.scalarrow('Serial Numbers', item.serialNumbers) }}
+            {{ table.tagrow('Types / Tags', 'types', item.types) }}
+            {{ table.tagrow('Location(s)', 'locations', item.locations) }}
+            {% if item.acquiredDate %}
+                {{ table.scalarrow('Acquired', item.acquiredDate|date("Y-m-d")) }}  {# TODO: Localize date format #}
+            {% endif %}
+            {{ table.scalarrow('Notes', item.notes, "notes") }}
+        </tbody>
+        </table>
+        <hr style="border-top: 1px dotted gray; color: transparent;">
+        {% if images %}
+            {% for filename in images %}
+                <div class="" style="float: left; padding:5px; max-height: 300px; overflow:hidden;">
+                    <img class="layout-view img-thumbnail"
+                         src="{{ path('inventory_image', {'id': item.id, 'filename': filename}) }}?w=200">
+                </div>
+            {% endfor %}
+        {% endif %}
+    </section>
+</body>
+</html>

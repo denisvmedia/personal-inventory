@@ -1,0 +1,12 @@
+th[scope=row] {
+    text-align: left;
+    width: 200px;
+}
+
+th[scope=row]:after {
+    content: ": ";
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}

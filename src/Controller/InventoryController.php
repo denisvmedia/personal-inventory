@@ -46,6 +46,19 @@ final class InventoryController extends AbstractController
         );
     }
 
+    #[Route('/inventory/{id<[0-9a-fA-F]{24}>}/print', name: 'inventory_get')]
+    public function getItemPrint(string $id): Response
+    {
+        $item = $this->inventory->getItem($id);
+        return $this->render(
+            'inventory/print.html.twig',
+            [
+                'item' => $item,
+                'images' => $this->images->getItemImages($item),
+            ]
+        );
+    }
+
     #[Route('/inventory/add', name: 'inventory_add')]
     #[Route('/inventory/{id}/edit', name: 'inventory_edit')]
     public function editItem(Request $request, InventoryItemEditFormHandler $formHandler, ?string $id = null): Response
