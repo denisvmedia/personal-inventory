@@ -75,7 +75,7 @@ class InventoryItem extends Persistable
         }
     }
 
-    public function setName(string $name): void
+    public function setName(?string $name): void
     {
         $this->name = $name;
     }
@@ -85,7 +85,7 @@ class InventoryItem extends Persistable
         return $this->name;
     }
 
-    public function setManufacturer(string $manufacturer) 
+    public function setManufacturer(?string $manufacturer)
     {
         $this->manufacturer = $manufacturer;
     }
@@ -287,7 +287,7 @@ class InventoryItem extends Persistable
         return $this->url;
     }
 
-    public function setUrl(string $url): void
+    public function setUrl(?string $url): void
     {
         $this->url = $url;
     }
