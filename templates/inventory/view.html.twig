@@ -15,6 +15,7 @@
             <i class="far fa-trash-alt"></i>
         </button>
     </form>
+    <a class="btn btn-secondary" target="_blank" href="{{ path('inventory_print', {'id': item.id}) }}"><i class="fas fa-print"></i>&nbsp;&nbsp;Print</a>
     <a class="btn btn-primary" href="{{ path('inventory_edit', {'id': item.id}) }}"><i class="fas fa-edit"></i>&nbsp;&nbsp;Edit</a>
 {% endblock %}
 
