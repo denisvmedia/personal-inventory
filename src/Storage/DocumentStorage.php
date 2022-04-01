@@ -58,19 +58,44 @@ final class DocumentStorage
     /**
      * @return Cursor<InventoryItem>
      */
-    public function getInventoryItems(): iterable
+    public function getInventoryItems(bool $withArchived = false): iterable
     {
+        $query = ['deleted' => false];
+        if (!$withArchived) {
+            $query = [
+                '$or' => [
+                    $query + ['archived' => false],
+                    $query + ['archived' => null],
+                ],
+            ];
+        }
+
         return $this->getInventoryCollection()->find(
-            ['deleted' => false], 
+            $query,
             ['sort' => ['name' => 1]]
         );
     }
 
-    public function searchInventoryItems(string $query): iterable
+    /**
+     * @return Cursor<InventoryItem>
+     */
+    public function getInventoryArchivedItems(): iterable
+    {
+        return $this->getInventoryCollection()->find(
+            [
+                'deleted' => false,
+                'archived' => true,
+            ],
+            ['sort' => ['name' => 1]]
+        );
+    }
+
+    public function searchInventoryItems(string $query, bool $archived): iterable
     {
         return $this->getInventoryCollection()->find([
             '$text' => ['$search' => $query],
-            'deleted' => false
+            'deleted' => false,
+            'archived' => $archived,
         ]);
     }
 
@@ -92,7 +117,7 @@ final class DocumentStorage
         return $item;
     }
 
-    public function getInventoryItemsByTag(string $category, string $tag): iterable
+    public function getInventoryItemsByTag(string $category, string $tag, bool $archived): iterable
     {
         return $this->getInventoryCollection()->find(
             [
@@ -100,7 +125,8 @@ final class DocumentStorage
                     '$regex' => '^' . $tag . '$',
                     '$options' => 'i'
                 ],
-                'deleted' => false
+                'deleted' => false,
+                'archived' => $archived,
             ], 
             ['sort' => ['name' => 1]]
         );
@@ -201,6 +227,34 @@ final class DocumentStorage
     public function deleteInventoryItem(InventoryItem $item): void
     {
         $item->setDeleted(true);
+        $inventory = $this->getInventoryCollection();
+        $inventory->replaceOne(
+            ['_id' => $item->getObjectId()],
+            $item,
+            ['upsert' => true]
+        );
+        $this->saveInventoryItemTags(Tag::CATEGORY_ITEM_TYPE, $item->getTypes(), []);
+        $this->saveInventoryItemTags(Tag::CATEGORY_ITEM_LOCATION, $item->getLocations(), []);
+        $this->imageStorage->deleteItemImages($item);
+    }
+
+    public function archiveInventoryItem(InventoryItem $item): void
+    {
+        $item->setArchived(true);
+        $inventory = $this->getInventoryCollection();
+        $inventory->replaceOne(
+            ['_id' => $item->getObjectId()],
+            $item,
+            ['upsert' => true]
+        );
+        $this->saveInventoryItemTags(Tag::CATEGORY_ITEM_TYPE, $item->getTypes(), []);
+        $this->saveInventoryItemTags(Tag::CATEGORY_ITEM_LOCATION, $item->getLocations(), []);
+        $this->imageStorage->deleteItemImages($item);
+    }
+
+    public function unarchiveInventoryItem(InventoryItem $item): void
+    {
+        $item->setArchived(false);
         $inventory = $this->getInventoryCollection();
         $inventory->replaceOne(
             ['_id' => $item->getObjectId()],

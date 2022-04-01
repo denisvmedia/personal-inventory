@@ -35,11 +35,8 @@
             {% else %}
                 <acquiredDate/>
             {% endif %}
-            {% if item.deleted %}
-                <deleted>1</deleted>
-            {% else %}
-                <deleted>0</deleted>
-            {% endif %}
+            <deleted>{% if item.deleted %}1{% else %}0{% endif %}</deleted>
+            <archived>{% if item.archived %}1{% else %}0{% endif %}</archived>
             {# @var \App\Storage\ImageStorage imagesSvc #}
             {% set images = imagesSvc.itemImages(item) %}
             {% if images is empty %}

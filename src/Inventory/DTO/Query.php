@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 final class Query
 {
     public readonly ?string $query;
+    public readonly bool $archived;
 
     public function __construct(Request $request, public readonly ?string $category = null, public readonly ?string $tag = null)
     {
@@ -18,5 +19,8 @@ final class Query
         } else {
             $this->query = $val;
         }
+
+        $val = $request->query->get('archived');
+        $this->archived = (bool) $val;
     }
 }

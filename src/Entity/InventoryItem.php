@@ -66,6 +66,8 @@ class InventoryItem extends Persistable
 
     protected bool $deleted = false;
 
+    protected bool $archived = false;
+
     public function __construct(?string $id = null)
     {
         parent::__construct();
@@ -280,6 +282,16 @@ class InventoryItem extends Persistable
     public function isDeleted(): bool
     {
         return $this->deleted;
+    }
+
+    public function setArchived(bool $archived): void
+    {
+        $this->archived = $archived;
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->archived;
     }
 
     public function getUrl(): ?string

@@ -94,6 +94,20 @@ final class InventoryController extends AbstractController
         return $this->redirectToRoute('inventory_list');
     }
 
+    #[Route('/inventory/{id}/archive', name: 'inventory_archive', methods: ['POST'])]
+    public function archiveItem(?string $id = null): Response
+    {
+        $this->inventory->archive($id);
+        return $this->redirectToRoute('inventory_list');
+    }
+
+    #[Route('/inventory/{id}/unarchive', name: 'inventory_unarchive', methods: ['POST'])]
+    public function unarchiveItem(?string $id = null): Response
+    {
+        $this->inventory->unarchive($id);
+        return $this->redirectToRoute('inventory_list');
+    }
+
     /**
      * GET image content; POST to delete
      * 

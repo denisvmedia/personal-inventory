@@ -19,20 +19,24 @@ final class Inventory
     public function listItems(Query $query): InventoryListResponse
     {
         if (!$this->isNullOrEmpty($query->category) && !$this->isNullOrEmpty($query->tag)) {
-            $items = $this->docs->getInventoryItemsByTag($query->category, $query->tag);
+            $items = $this->docs->getInventoryItemsByTag($query->category, $query->tag, $query->archived);
             $breadcrumb = $query->tag;
 
             return new InventoryListResponse($items, $breadcrumb);
         }
 
         if (null !== $query->query) {
-            $items = $this->docs->searchInventoryItems($query->query);
+            $items = $this->docs->searchInventoryItems($query->query, $query->archived);
             $breadcrumb = $query->query;
 
             return new InventoryListResponse($items, $breadcrumb);
         }
 
-        $items = $this->docs->getInventoryItems();
+        if ($query->archived) {
+            $items = $this->docs->getInventoryArchivedItems();
+        } else {
+            $items = $this->docs->getInventoryItems();
+        }
 
         return new InventoryListResponse($items);
     }
@@ -58,6 +62,18 @@ final class Inventory
     {
         $item = $this->getOrCreateItem($id);
         $this->docs->deleteInventoryItem($item);
+    }
+
+    public function archive(?string $id = null): void
+    {
+        $item = $this->getOrCreateItem($id);
+        $this->docs->archiveInventoryItem($item);
+    }
+
+    public function unarchive(?string $id = null): void
+    {
+        $item = $this->getOrCreateItem($id);
+        $this->docs->unarchiveInventoryItem($item);
     }
 
     private function isNullOrEmpty(?string $val): bool

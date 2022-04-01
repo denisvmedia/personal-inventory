@@ -16,7 +16,7 @@ final class Exporter
 
     public function getExport(): string
     {
-        $items = $this->docs->getInventoryItems();
+        $items = $this->docs->getInventoryItems(withArchived: true);
         $export = $this->twig->render('export.xml.twig', [
             'items' => $items,
             'imagesSvc' => $this->images,
