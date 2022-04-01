@@ -70,11 +70,11 @@ configuration to include at least HTTP Basic Authentication and HTTPS. Also bloc
 TODO
 ----
 
-- Archived attribute.
-- Warranty information.
-- PDF invoice support separate from images.
-- PDF manuals attach support.
-- PDF export useful for insurance purposes.
-- Links to various online stores to make it easy to order more of an item.
-- Link to the goods and link to the seller (often it's one and the same link, but sometimes it can differ).
-- Configurable depreciation schedule to estimate current values.
+- [x] Archived attribute.
+- [ ] Warranty information.
+- [ ] PDF invoice support separate from images.
+- [ ] PDF manuals attach support.
+- [ ] PDF export useful for insurance purposes.
+- [ ] Links to various online stores to make it easy to order more of an item.
+- [ ] Link to the goods and link to the seller (often it's one and the same link, but sometimes it can differ).
+- [ ] Configurable depreciation schedule to estimate current values.
