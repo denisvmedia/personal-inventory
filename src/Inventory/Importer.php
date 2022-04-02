@@ -64,6 +64,9 @@ final class Importer
             $item->setDeleted(true);
         }
 
+        $archived = (string) $element->archived;
+        $item->setArchived('1' === $archived);
+
         return $item;
     }
 
