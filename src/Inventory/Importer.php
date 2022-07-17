@@ -12,7 +12,7 @@ use SimpleXMLElement;
 
 final class Importer
 {
-    public function __construct(private DocumentStorage $docs, private ImageStorage $images)
+    public function __construct(private readonly DocumentStorage $docs, private readonly ImageStorage $images)
     {
     }
 

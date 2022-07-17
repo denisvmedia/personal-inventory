@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class Inventory
 {
-    public function __construct(private DocumentStorage $docs)
+    public function __construct(private readonly DocumentStorage $docs)
     {
     }
 

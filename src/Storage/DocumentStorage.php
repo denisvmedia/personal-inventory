@@ -90,19 +90,35 @@ final class DocumentStorage
         );
     }
 
-    public function searchInventoryItems(string $query, bool $archived): iterable
+    public function searchInventoryItems(string $q, bool $archived): iterable
     {
-        return $this->getInventoryCollection()->find([
-            '$text' => ['$search' => $query],
-            'deleted' => false,
-            'archived' => $archived,
-        ]);
+        if ($archived) {
+            $query = [
+                '$text' => ['$search' => $q],
+                'deleted' => false,
+                'archived' => true,
+            ];
+        } else {
+            $query = [
+                '$text' => ['$search' => $q],
+                'deleted' => false,
+            ];
+            $query = [
+                '$or' => [
+                    $query + ['archived' => false],
+                    $query + ['archived' => null],
+                ],
+            ];
+        }
+
+        return $this->getInventoryCollection()->find($query);
     }
 
     public function getInventoryItem(string $id): ?InventoryItem
     {
         $item = $this->getInventoryCollection()->findOne([
-            '_id' => new ObjectId($id), 'deleted' => false
+            '_id' => new ObjectId($id),
+            'deleted' => false,
         ]);
 
         if (null === $item) {
@@ -119,15 +135,27 @@ final class DocumentStorage
 
     public function getInventoryItemsByTag(string $category, string $tag, bool $archived): iterable
     {
-        return $this->getInventoryCollection()->find(
-            [
-                $category => [
-                    '$regex' => '^' . $tag . '$',
-                    '$options' => 'i'
+        $query = [
+            $category => [
+                '$regex' => '^' . $tag . '$',
+                '$options' => 'i'
+            ],
+            'deleted' => false,
+        ];
+
+        if ($archived) {
+            $query['archived'] = true;
+        } else {
+            $query = [
+                '$or' => [
+                    $query + ['archived' => false],
+                    $query + ['archived' => null],
                 ],
-                'deleted' => false,
-                'archived' => $archived,
-            ], 
+            ];
+        }
+
+        return $this->getInventoryCollection()->find(
+            $query,
             ['sort' => ['name' => 1]]
         );
     }

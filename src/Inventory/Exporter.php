@@ -10,7 +10,7 @@ use Twig\Environment;
 
 final class Exporter
 {
-    public function __construct(private DocumentStorage $docs, private ImageStorage $images, private Environment $twig)
+    public function __construct(private readonly DocumentStorage $docs, private ImageStorage $images, private readonly Environment $twig)
     {
     }
 

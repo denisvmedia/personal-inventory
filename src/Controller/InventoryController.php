@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class InventoryController extends AbstractController
 {
-    public function __construct(private ImageStorage $images, private Inventory $inventory)
+    public function __construct(private readonly ImageStorage $images, private readonly Inventory $inventory)
     {
     }
 
